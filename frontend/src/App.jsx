@@ -30,12 +30,9 @@ const CoursesLanding = lazy(() => import("./pages/CoursesLanding.jsx"));
 const CourseDiscovery = lazy(() => import("./pages/CourseDiscovery.jsx"));
 const LearningMode = lazy(() => import("./pages/LearningMode.jsx"));
 const Landing = lazy(() => import("./pages/Landing.jsx"));
-const NotificationCenter = lazy(() =>
-  import("./components/NotificationCenter.jsx")
-);
-const NotificationPreferences = lazy(() =>
-  import("./components/NotificationPreferences.jsx")
-);
+const NotificationCenter = lazy(() => import("./components/NotificationCenter.jsx"));
+const NotificationPreferences = lazy(() => import("./components/NotificationPreferences.jsx"));
+const SearchResults = lazy(() => import("./pages/SearchResults.jsx"));
 
 const MainLayout = ({
   children,
@@ -293,8 +290,6 @@ const App = () => {
           <Routes>
             <Route
               path="/landing"
-              element={
-                <Suspense fallback={<PostSkeleton />}>
                   <Landing />
                 </Suspense>
               }
@@ -337,6 +332,7 @@ const App = () => {
                       />
                       <Route path="/reels" element={<Reels />} />
                       <Route path="/create-post" element={<CreatePost />} />
+                      <Route path="/search" element={<SearchResults />} />
                       <Route
                         path="/notifications"
                         element={<NotificationCenter />}
@@ -346,14 +342,6 @@ const App = () => {
                         element={<NotificationPreferences />}
                       />
                       <Route path="/contact" element={<ContactUs />} />
-                      <Route
-                        path="/certificate"
-                        element={<CertificatePage />}
-                      />
-                      <Route
-                        path="/assessment"
-                        element={<GamifiedAssessmentPage />}
-                      />
                       <Route
                         path="/certificate"
                         element={<CertificatePage />}
