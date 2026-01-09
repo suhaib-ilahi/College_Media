@@ -178,7 +178,7 @@ const Landing = () => {
               <div className="w-7 h-7 md:w-8 md:h-8 bg-gray-900 rounded-lg flex items-center justify-center">
                 <GraduationCap className="w-4 h-4 md:w-5 md:h-5 text-white" />
               </div>
-              <span className="text-base md:text-lg font-bold">College Media</span>
+              <span className="text-base md:text-lg font-bold text-black">College Media</span>
             </div>
 
             <div className="hidden lg:flex gap-6 text-gray-700 text-sm font-medium">
@@ -260,7 +260,7 @@ const Landing = () => {
       {/* FEATURES */}
       <section id="features" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-black ">
             Built for College Life
           </h2>
 
@@ -337,7 +337,7 @@ const Landing = () => {
           Join Your Campus Today
         </h2>
         <Link
-          to="/home"
+          to="/signup"
           className="inline-flex items-center gap-2 px-8 py-3 bg-white text-black rounded-full font-medium hover:bg-gray-100 transition"
         >
           Get Started Free <ArrowRight />

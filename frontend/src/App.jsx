@@ -30,6 +30,9 @@ const CoursesLanding = lazy(() => import("./pages/CoursesLanding.jsx"));
 const CourseDiscovery = lazy(() => import("./pages/CourseDiscovery.jsx"));
 const LearningMode = lazy(() => import("./pages/LearningMode.jsx"));
 const Landing = lazy(() => import("./pages/Landing.jsx"));
+const Login = lazy(() => import("./pages/Login.jsx"));
+const Signup = lazy(() => import("./pages/Signup.jsx"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword.jsx"));
 const NotificationCenter = lazy(() =>
   import("./components/NotificationCenter.jsx")
 );
