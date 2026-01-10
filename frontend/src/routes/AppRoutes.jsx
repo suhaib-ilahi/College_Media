@@ -28,6 +28,7 @@ const Landing = lazy(() => import("../pages/Landing.jsx"));
 const NotificationCenter = lazy(() => import("../components/NotificationCenter.jsx"));
 const NotificationPreferences = lazy(() => import("../components/NotificationPreferences.jsx"));
 const SearchResults = lazy(() => import("../pages/SearchResults.jsx"));
+const Settings = lazy(() => import("../pages/Settings.jsx"));
 
 const AppRoutes = ({
     activeTab,
@@ -161,6 +162,15 @@ const AppRoutes = ({
           element={
             <LazyWrapper>
               <AdvancedSyllabusPage />
+            </LazyWrapper>
+          }
+        />
+
+        <Route
+          path="settings"
+          element={
+            <LazyWrapper>
+              <Settings />
             </LazyWrapper>
           }
         />

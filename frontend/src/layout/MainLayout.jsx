@@ -1,5 +1,6 @@
 import LeftSidebar from "../components/LeftSidebar";
 import ThemeToggle from "../components/ThemeToggle";
+import { Outlet } from "react-router-dom";
 
 const MainLayout = ({
   children,
@@ -89,7 +90,7 @@ const MainLayout = ({
             <LeftSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
           </aside>
           <main id="main-content" className="lg:col-span-3" role="main">
-            {children}
+            <Outlet />
           </main>
         </div>
       </div>
