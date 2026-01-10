@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GraduationCap, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
-import { authAPI } from "../services/authService";
+import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -35,17 +36,17 @@ const Signup = () => {
     
     try {
       const { confirmPassword, ...registerData } = formData;
-      const response = await authAPI.register(registerData);
+      const response = await register(registerData);
       
       if (response.success) {
-        toast.success(response.message || "Registration successful!");
-        navigate("/home");
+        toast.success("Registration successful!");
+        navigate("/feed");
       } else {
         toast.error(response.message || "Registration failed");
       }
     } catch (error) {
       console.error("Signup error:", error);
-      toast.error(error.response?.data?.message || "Registration failed. Please try again.");
+      toast.error("Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -59,7 +60,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-orange-50 flex items-center justify-center p-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-orange-50 flex items-center justify-center p-4 py-12 overflow-x-hidden">
       <div className="w-full max-w-md">
         {/* Logo */}
         <Link to="/" className="flex items-center justify-center gap-2 mb-8">
