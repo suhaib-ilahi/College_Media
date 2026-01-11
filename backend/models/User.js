@@ -84,6 +84,18 @@ const userSchema = new mongoose.Schema({
       default: true
     }
   },
+  settings: {
+    fontSize: {
+      type: String,
+      enum: ['small', 'medium', 'large'],
+      default: 'medium'
+    },
+    theme: {
+      type: String,
+      enum: ['light', 'dark', 'auto'],
+      default: 'auto'
+    }
+  },
   isVerified: {
     type: Boolean,
     default: false
