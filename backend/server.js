@@ -8,8 +8,6 @@ const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const resumeRoutes = require("./routes/resume");
 const uploadRoutes = require("./routes/upload");
 const { globalLimiter, authLimiter } = require("./middleware/rateLimiter");
-
-// ✅ FIXED: CommonJS import
 const { slidingWindowLimiter } = require("./middleware/slidingWindowLimiter");
 
 dotenv.config();
@@ -25,10 +23,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ------------------
-// 🔁 API VERSION HANDLING (Backward Compatibility)
+// 🔁 API VERSION HANDLING
 // ------------------
 app.use((req, res, next) => {
-  // Default version = v1 (old clients safe)
   req.apiVersion = req.headers["x-api-version"] || "v1";
   res.setHeader("X-API-Version", req.apiVersion);
   next();
@@ -37,11 +34,7 @@ app.use((req, res, next) => {
 // ------------------
 // ⏱️ RATE LIMITING
 // ------------------
-
-// 🔥 Sliding Window Rate Limiter (smooth traffic control)
 app.use("/api", slidingWindowLimiter);
-
-// ✅ Global fixed limiter (legacy + extra protection)
 app.use("/api", globalLimiter);
 
 // ------------------
@@ -78,13 +71,9 @@ const startServer = async () => {
   }
 
   // ------------------
-  // 🔐 ROUTES (VERSION-SAFE)
+  // 🔐 ROUTES
   // ------------------
-
-  // 🔥 Strict auth rate limit (login / otp)
   app.use("/api/auth", authLimiter, require("./routes/auth"));
-
-  // Other APIs (backward compatible)
   app.use("/api/users", require("./routes/users"));
   app.use("/api/resume", resumeRoutes);
   app.use("/api/upload", uploadRoutes);
@@ -92,10 +81,10 @@ const startServer = async () => {
   app.use("/api/account", require("./routes/account"));
 
   // ------------------
-  // ❌ ERROR HANDLERS
+  // ❌ ERROR HANDLERS (VERY IMPORTANT ORDER)
   // ------------------
-  app.use(notFound);
-  app.use(errorHandler);
+  app.use(notFound);      // 404 handler
+  app.use(errorHandler); // global error handler
 
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
