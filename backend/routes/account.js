@@ -7,6 +7,7 @@ const UserMock = require('../mockdb/userDB');
 const MessageMongo = require('../models/Message');
 const MessageMock = require('../mockdb/messageDB');
 const { validateAccountDeletion, checkValidation } = require('../middleware/validationMiddleware');
+const { sendAccountDeactivationEmail } = require('../services/emailService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'college_media_secret_key';
 

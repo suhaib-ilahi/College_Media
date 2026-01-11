@@ -31,6 +31,12 @@ const Settings = () => {
   const [passwordError, setPasswordError] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
 
+  const [showDeactivateAccount, setShowDeactivateAccount] = useState(false);
+  const [deactivatePassword, setDeactivatePassword] = useState("");
+  const [deactivateReason, setDeactivateReason] = useState("");
+  const [deactivateError, setDeactivateError] = useState("");
+  const [deactivateLoading, setDeactivateLoading] = useState(false);
+
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteReason, setDeleteReason] = useState("");
@@ -258,6 +264,58 @@ const Settings = () => {
     setTwoFAStep(1);
     setTwoFACode("");
     setTwoFAError("");
+  };
+
+  const handleDeactivateAccountClick = () => {
+    setShowDeactivateAccount(true);
+    setDeactivatePassword("");
+    setDeactivateReason("");
+    setDeactivateError("");
+  };
+
+  const handleDeactivateAccountSubmit = async (e) => {
+    e.preventDefault();
+    setDeactivateError("");
+
+    if (!deactivatePassword) {
+      setDeactivateError("Password is required");
+      return;
+    }
+
+    setDeactivateLoading(true);
+
+    try {
+      const response = await accountApi.deactivateAccount({
+        password: deactivatePassword,
+        reason: deactivateReason
+      });
+
+      if (response.success) {
+        // Logout and redirect to login
+        logout();
+        navigate("/login", { 
+          state: { 
+            message: "Your account has been deactivated. You can reactivate it anytime by logging in again." 
+          }
+        });
+      } else {
+        setDeactivateError(response.message || "Failed to deactivate account");
+      }
+    } catch (error) {
+      console.error("Deactivate account error:", error);
+      setDeactivateError(
+        error.response?.data?.message || "An error occurred while deactivating your account"
+      );
+    } finally {
+      setDeactivateLoading(false);
+    }
+  };
+
+  const handleDeactivateAccountCancel = () => {
+    setShowDeactivateAccount(false);
+    setDeactivatePassword("");
+    setDeactivateReason("");
+    setDeactivateError("");
   };
 
   const handleDeleteAccountClick = () => {
@@ -544,7 +602,10 @@ const Settings = () => {
           Danger Zone
         </h2>
         <div className="space-y-3">
-          <button className="w-full p-4 rounded-xl border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 text-left">
+          <button 
+            onClick={handleDeactivateAccountClick}
+            className="w-full p-4 rounded-xl border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 text-left"
+          >
             <p className="font-bold text-red-600 dark:text-red-400">
               Deactivate Account
             </p>

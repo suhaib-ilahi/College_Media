@@ -211,6 +211,8 @@ module.exports = {
   update,
   updateProfilePicture,
   updatePassword,
+  deactivate,
+  reactivate,
   softDelete,
   restore,
   permanentDelete,

@@ -152,7 +152,21 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Method to soft delete user account
+// Method to deactivate user account (temporary)
+userSchema.methods.deactivate = async function(reason = null) {
+  this.isActive = false;
+  this.deletionReason = reason; // Store reason for deactivation
+  return this.save();
+};
+
+// Method to reactivate user account
+userSchema.methods.reactivate = async function() {
+  this.isActive = true;
+  this.deletionReason = null;
+  return this.save();
+};
+
+// Method to soft delete user account (permanent with grace period)
 userSchema.methods.softDelete = async function(reason = null) {
   this.isDeleted = true;
   this.deletedAt = new Date();

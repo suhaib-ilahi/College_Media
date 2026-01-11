@@ -133,6 +133,8 @@ export const moderationApi = {
 
 // Account endpoints
 export const accountApi = {
+  deactivateAccount: (data) => apiClient.post('/account/deactivate', data),
+  reactivateAccount: () => apiClient.post('/account/reactivate'),
   deleteAccount: (data) => apiClient.delete('/account', { data }),
   restoreAccount: () => apiClient.post('/account/restore'),
   permanentDelete: (data) => apiClient.delete('/account/permanent', { data }),
