@@ -3,7 +3,9 @@
  * Handles 404 and application errors consistently
  */
 
-// ❌ 404 - Route Not Found Handler
+const logger = require('../utils/logger');
+
+// 404 Not Found Handler
 const notFound = (req, res, next) => {
   res.status(404).json({
     success: false,
@@ -16,8 +18,8 @@ const notFound = (req, res, next) => {
 
 // ❌ Global Error Handler
 const errorHandler = (err, req, res, next) => {
-  // Log error (always)
-  console.error("Error:", err);
+  // Log error for debugging
+  logger.error('Error:', { message: err.message, stack: err.stack });
 
   // Default status code
   const statusCode = err.statusCode || res.statusCode || 500;
