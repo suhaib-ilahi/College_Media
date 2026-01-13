@@ -1,59 +1,79 @@
 /**
- * =====================================
- * Secrets Manager (Rotation Aware)
- * =====================================
+ * ============================================================
+ * Secrets Manager (Rotation Ready)
+ * ============================================================
+ * - Centralized secret access
  * - Supports current + previous secrets
- * - Runtime reload support
- * - Zero downtime rotation
+ * - Hot reload support
+ * - Future compatible with Vault / AWS SM
+ * ============================================================
  */
+
+"use strict";
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
+const logger = require("../utils/logger");
+
+const SECRETS_FILE = path.join(__dirname, "../secrets.json");
 
 class SecretsManager {
   constructor() {
-    this.cache = {};
+    this.secrets = {};
     this.lastLoadedAt = null;
-    this.loadSecrets();
+    this.load();
   }
 
-  loadSecrets() {
-    const secretsPath = path.join(__dirname, "../secrets.json");
-
-    if (!fs.existsSync(secretsPath)) {
-      throw new Error("❌ secrets.json not found");
+  load() {
+    if (!fs.existsSync(SECRETS_FILE)) {
+      logger.critical("Secrets file missing", { path: SECRETS_FILE });
+      process.exit(1);
     }
 
-    const raw = fs.readFileSync(secretsPath);
-    const parsed = JSON.parse(raw);
+    try {
+      const raw = fs.readFileSync(SECRETS_FILE, "utf-8");
+      this.secrets = JSON.parse(raw);
+      this.lastLoadedAt = new Date();
 
-    this.cache = parsed;
-    this.lastLoadedAt = new Date();
-
-    console.log("🔐 Secrets loaded at", this.lastLoadedAt.toISOString());
+      logger.info("Secrets loaded", {
+        loadedAt: this.lastLoadedAt.toISOString(),
+        keys: Object.keys(this.secrets),
+      });
+    } catch (err) {
+      logger.critical("Failed to load secrets", err);
+      process.exit(1);
+    }
   }
 
-  get(key) {
-    return this.cache[key];
+  reload() {
+    logger.warn("Reloading secrets");
+    this.load();
   }
 
-  getRotatableSecret(name) {
-    const secret = this.cache[name];
-
+  get(name) {
+    const secret = this.secrets[name];
     if (!secret || !secret.current) {
-      throw new Error(`Secret ${name} is missing`);
+      throw new Error(`Secret ${name} not found or invalid`);
+    }
+    return secret.current;
+  }
+
+  getRotatable(name) {
+    const secret = this.secrets[name];
+    if (!secret || !secret.current) {
+      throw new Error(`Rotatable secret ${name} missing`);
     }
 
     return {
       current: secret.current,
       previous: secret.previous || null,
-      rotatedAt: secret.rotatedAt,
+      rotatedAt: secret.rotatedAt || null,
     };
   }
 
-  reload() {
-    console.log("🔄 Reloading secrets...");
-    this.loadSecrets();
+  generate() {
+    return crypto.randomBytes(64).toString("hex");
   }
 }
 
