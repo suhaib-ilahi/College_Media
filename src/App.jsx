@@ -1,21 +1,10 @@
-/**
- * College Media - Main Application Component
- *
- * A comprehensive social media feed application built with React.
- * Features include:
- * - Stories carousel with auto-scroll functionality
- * - Dynamic post feed with like/comment interactions
- * - Search functionality
- * - Navigation tabs (Home, Explore, Reels, Messages, Notifications, Settings)
- * - Suggested accounts sidebar
- * - Trending hashtags
- * - Online friends display
- * - Fully responsive gradient-themed UI
- *
- * @component Main application container
- * @returns {React.ReactElement} Main app layout with navigation and feed
- */
-
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import Login from './components/Login';
+import Register from './components/Register';
+=======
 import React, { useState, useEffect } from "react";
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
