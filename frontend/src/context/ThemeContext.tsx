@@ -1,13 +1,24 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-const ThemeContext = createContext();
+type Theme = 'light' | 'dark';
 
-export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => {
+interface ThemeContextType {
+  theme: Theme;
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+}
+
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+interface ThemeProviderProps {
+  children: ReactNode;
+}
+
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+  const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('theme');
-      if (saved) return saved;
-      // System preference listener could be added here
+      const saved = localStorage.getItem('theme') as Theme | null;
+      if (saved === 'dark' || saved === 'light') return saved;
       return 'light';
     }
     return 'light';
@@ -15,7 +26,6 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     const root = window.document.documentElement;
-    // Tailwind uses 'dark' class on html/body. We target html.
     if (theme === 'dark') {
       root.classList.add('dark');
     } else {

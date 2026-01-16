@@ -7,15 +7,20 @@ import useContentModeration from '../hooks/useContentModeration';
 import ModerationWarning from './ModerationWarning';
 import { useTranslation } from 'react-i18next';
 
-const CreatePost = ({ onPostCreated }) => {
+interface CreatePostProps {
+  onPostCreated?: (post: any) => void;
+}
+
+const CreatePost: React.FC<CreatePostProps> = ({ onPostCreated }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { createPoll } = useCreatePoll();
   const [caption, setCaption] = useState('');
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | ArrayBuffer | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [showPollCreator, setShowPollCreator] = useState(false);
-  const [pollData, setPollData] = useState(null);
+  const [pollData, setPollData] = useState<any>(null);
 
   const { analyze, bypass, resetModeration, warnings } = useContentModeration();
   const [showModerationModal, setShowModerationModal] = useState(false);
@@ -60,11 +65,11 @@ const CreatePost = ({ onPostCreated }) => {
       const newPost = {
         id: Date.now(),
         user: {
-          id: user._id,
-          username: user.username,
-          profilePicture: user.profilePicture
+          id: user?.id || '',
+          username: user?.username || 'Anonymous',
+          profilePicture: user?.profilePicture
         },
-        imageUrl: imagePreview || (pollData ? null : 'https://placehold.co/600x600/6366F1/FFFFFF?text=New+Post'),
+        imageUrl: typeof imagePreview === 'string' ? imagePreview : (pollData ? null : 'https://placehold.co/600x600/6366F1/FFFFFF?text=New+Post'),
         caption: caption,
         likes: 0,
         comments: 0,

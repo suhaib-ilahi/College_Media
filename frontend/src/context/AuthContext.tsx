@@ -1,6 +1,22 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { User } from "../types";
 
-const AuthContext = createContext();
+interface AuthContextType {
+  user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  token: string | null;
+  login: (email: string, password: string) => Promise<{ success: boolean; user?: User; message?: string }>;
+  register: (formData: any) => Promise<{ success: boolean; message: string; errors?: any }>;
+  resetPassword: (email: string) => Promise<void>;
+  logout: () => Promise<void>;
+  updateUserProfile: (profileData: any) => Promise<{ success: boolean; data?: User; message?: string }>;
+  uploadProfilePicture: (imageFile: File) => Promise<{ success: boolean; data?: any; message?: string }>;
+  loading: boolean;
+  error: string | null;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
@@ -11,11 +27,15 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [error, setError] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -29,14 +49,13 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const fetchUserData = async (token) => {
+  const fetchUserData = async (token: string) => {
     console.log("🔐 AuthContext: Fetching user data...");
     try {
       setLoading(true);
       setError(null);
       const response = await fetch(
-        `${
-          import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"
+        `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"
         }/api/users/profile`,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -53,7 +72,7 @@ export const AuthProvider = ({ children }) => {
       console.log("✅ AuthContext: User data loaded successfully");
       setUser(data.data);
       setToken(token);
-    } catch (err) {
+    } catch (err: any) {
       console.error("❌ AuthContext: Error fetching user data:", err);
       localStorage.removeItem("token");
       setToken(null);
@@ -71,11 +90,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email: string, password: string) => {
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"
+        `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"
         }/api/auth/login`,
         {
           method: "POST",
@@ -87,11 +105,10 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
 
       if (data.success) {
-        // Backend sends token inside data object
         const token = data.data.token || data.token;
         const userData = { ...data.data };
-        delete userData.token; // Remove token from user object
-        
+        delete userData.token;
+
         localStorage.setItem("token", token);
         setToken(token);
         setUser(userData);
@@ -110,9 +127,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const resetPassword = async (email) => {
+  const resetPassword = async (email: string) => {
     try {
-      // Mock password reset - replace with actual implementation
       console.log("Password reset requested for:", email);
       return Promise.resolve();
     } catch {
@@ -120,7 +136,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (formData) => {
+  const register = async (formData: any) => {
     try {
       const API_BASE_URL =
         import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
@@ -146,10 +162,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (data.success) {
-        // Registration successful - user needs to login
-        // Registration doesn't return token, only success message
         setError(null);
-
         return { success: true, message: data.message };
       } else {
         console.error("❌ Registration failed:", data.message, data.errors);
@@ -159,7 +172,7 @@ export const AuthProvider = ({ children }) => {
           errors: data.errors
         };
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("❌ Registration Error:", err);
 
       return {
@@ -167,7 +180,7 @@ export const AuthProvider = ({ children }) => {
         message: !navigator.onLine
           ? "No internet connection."
           : err.message ||
-            "Registration failed. Please check your server connection.",
+          "Registration failed. Please check your server connection.",
       };
     }
   };
@@ -177,7 +190,6 @@ export const AuthProvider = ({ children }) => {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
       const authToken = token || localStorage.getItem("token");
 
-      // Call backend logout endpoint if token exists
       if (authToken) {
         await fetch(`${API_BASE_URL}/api/auth/logout`, {
           method: "POST",
@@ -188,10 +200,8 @@ export const AuthProvider = ({ children }) => {
         });
       }
     } catch (error) {
-      // Continue with logout even if backend call fails
       console.error("Logout API error:", error);
     } finally {
-      // Always clear local storage and state
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       setToken(null);
@@ -199,7 +209,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const updateUserProfile = async (profileData) => {
+  const updateUserProfile = async (profileData: any) => {
     try {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
       const authToken = token || localStorage.getItem("token");
@@ -229,7 +239,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         return { success: false, message: data.message };
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Profile update error:", err);
       return {
         success: false,
@@ -238,7 +248,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const uploadProfilePicture = async (imageFile) => {
+  const uploadProfilePicture = async (imageFile: File) => {
     try {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
       const authToken = token || localStorage.getItem("token");
@@ -265,12 +275,14 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (data.success) {
-        setUser({ ...user, profilePicture: data.data.profilePicture });
+        if (user) {
+          setUser({ ...user, profilePicture: data.data.profilePicture });
+        }
         return { success: true, data: data.data };
       } else {
         return { success: false, message: data.message };
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Profile picture upload error:", err);
       return {
         success: false,
@@ -296,7 +308,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-          {children}
+      {children}
     </AuthContext.Provider>
   );
 };

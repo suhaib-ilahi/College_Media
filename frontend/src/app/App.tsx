@@ -1,22 +1,26 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
-import { performanceMonitor } from "../utils/performanceMonitor.js";
-import AppRoutes from "../routes/AppRoutes.jsx";
-import { AppProviders } from "./AppProviders.jsx";
-import { useWebVitals, reportWebVitals } from "../hooks/useWebVitals.js";
-import useKeyboardShortcuts from "../hooks/useKeyboardShortcuts.js";
-import KeyboardShortcutsHelp from "../components/KeyboardShortcutsHelp.jsx";
-import { useTheme } from "../context/ThemeContext.jsx";
+import { performanceMonitor } from "../utils/performanceMonitor";
+import AppRoutes from "../routes/AppRoutes";
+import { AppProviders } from "./AppProviders";
+import { useWebVitals, reportWebVitals } from "../hooks/useWebVitals";
+import useKeyboardShortcuts from "../hooks/useKeyboardShortcuts";
+import KeyboardShortcutsHelp from "../components/KeyboardShortcutsHelp";
+import { useTheme } from "../context/ThemeContext";
 
+export interface LayoutState {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+}
 
 const App = () => {
-
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("Home");
-  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
 
-  const layoutState = {
+  const layoutState: LayoutState = {
     activeTab,
     setActiveTab,
     searchQuery,
@@ -29,7 +33,7 @@ const App = () => {
     performanceMonitor.mark("app-init");
 
     // Register Service Worker
-    if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
+    if ("serviceWorker" in navigator && import.meta.env.PROD) {
       navigator.serviceWorker
         .register("/serviceWorker.js")
         .then((registration) => {
@@ -57,8 +61,12 @@ const App = () => {
   );
 };
 
+interface AppContentProps {
+  layoutState: LayoutState;
+}
+
 // Separate component to use hooks that depend on context
-const AppContent = ({ layoutState }) => {
+const AppContent = ({ layoutState }: AppContentProps) => {
   const navigate = useNavigate();
   const { toggleTheme } = useTheme();
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
@@ -71,9 +79,9 @@ const AppContent = ({ layoutState }) => {
     'g n': () => navigate('/notifications'),
     '?': () => setShowShortcutsHelp(true),
     't': () => toggleTheme(),
-    '/': (e) => {
+    '/': (e: React.KeyboardEvent | KeyboardEvent) => {
       e.preventDefault();
-      document.querySelector('input[type="text"]')?.focus();
+      (document.querySelector('input[type="text"]') as HTMLInputElement)?.focus();
     }
   };
 

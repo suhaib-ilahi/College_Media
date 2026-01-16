@@ -1,14 +1,18 @@
+import React, { ReactNode } from "react";
+import BackButton from "../components/BackButton";
+import InstallPWA from "../components/InstallPWA";
+import OfflineIndicator from "../components/OfflineIndicator";
+import ErrorBoundary from "../components/ErrorBoundary";
+import { ErrorProvider } from "../context/ErrorContext";
+import { SettingsProvider } from "../context/SettingsContext";
+import { ThemeProvider } from "../context/ThemeContext";
+import { Toaster } from 'react-hot-toast';
 
-import BackButton from "../components/BackButton.jsx";
-import InstallPWA from "../components/InstallPWA.jsx";
-import OfflineIndicator from "../components/OfflineIndicator.jsx";
-import ErrorBoundary from "../components/ErrorBoundary.jsx";
-import { ErrorProvider } from "../context/ErrorContext.jsx";
-import { SettingsProvider } from "../context/SettingsContext.jsx";
-import { ThemeProvider } from "../context/ThemeContext.jsx";
-import Toaster from 'react-hot-toast'
+interface AppProvidersProps {
+    children: ReactNode;
+}
 
-export const AppProviders = ({ children }) => {
+export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
     return (
         <div style={{ margin: 0, padding: 0, width: '100%', overflow: 'hidden' }}>
             <SettingsProvider>

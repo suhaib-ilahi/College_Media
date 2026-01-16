@@ -1,60 +1,68 @@
-import { lazy, Suspense } from "react";
+import React, { lazy, Suspense, ReactNode } from "react";
 import { PostSkeleton } from "../components/SkeletonLoader";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import MainLayout from "../layout/MainLayout.jsx";
-import ExploreHub from "../pages/ExplorerHub.jsx";
-import PricingPage from "../pages/PricingPage.jsx";
+import MainLayout from "../layout/MainLayout";
+import ExploreHub from "../pages/ExplorerHub";
+import PricingPage from "../pages/PricingPage";
 
-const LazyWrapper = ({ children }) => (
+interface LazyWrapperProps {
+  children: ReactNode;
+}
+
+const LazyWrapper: React.FC<LazyWrapperProps> = ({ children }) => (
   <Suspense fallback={<PostSkeleton />}>
     {children}
   </Suspense>
 );
 
-const Reels = lazy(() => import("../pages/Reels.jsx"));
-const ContactUs = lazy(() => import("../pages/ContactUs.jsx"));
-const CertificatePage = lazy(() => import("../pages/CertificatePage.jsx"));
+const Reels = lazy(() => import("../pages/Reels"));
+const ContactUs = lazy(() => import("../pages/ContactUs"));
+const CertificatePage = lazy(() => import("../pages/CertificatePage"));
 const GamifiedAssessmentPage = lazy(() =>
-  import("../pages/GamifiedAssessmentPage.jsx")
+  import("../pages/GamifiedAssessmentPage")
 );
 const AdvancedSyllabusPage = lazy(() =>
-  import("../pages/AdvancedSyllabusPage.jsx")
+  import("../pages/AdvancedSyllabusPage")
 );
-const Home = lazy(() => import("../pages/Home.jsx"));
-const CreatePost = lazy(() => import("../components/CreatePost.jsx"));
-const CoursesLanding = lazy(() => import("../pages/CoursesLanding.jsx"));
-const LearningMode = lazy(() => import("../pages/LearningMode.jsx"));
-const Landing = lazy(() => import("../pages/Landing.jsx"));
-const Login = lazy(() => import("../pages/Login.jsx"));
-const Signup = lazy(() => import("../pages/Signup.jsx"));
-const ForgotPassword = lazy(() => import("../pages/ForgotPassword.jsx"));
-const NotificationCenter = lazy(() => import("../components/NotificationCenter.jsx"));
-const NotificationPreferences = lazy(() => import("../components/NotificationPreferences.jsx"));
-const SearchResults = lazy(() => import("../pages/SearchResults.jsx"));
-const ModerationDashboard = lazy(() => import("../pages/admin/ModerationDashboard.jsx"));
-const ReportDetail = lazy(() => import("../pages/admin/ReportDetail.jsx"));
-const Settings = lazy(() => import("../pages/Settings.jsx"));
-const Profile = lazy(() => import("../pages/Profile.jsx"));
-const EditProfile = lazy(() => import("../pages/EditProfile.jsx"));
-const Messages = lazy(() => import("../pages/Messages.jsx"));
-const More = lazy(() => import("../pages/More.jsx"));
-const Stories = lazy(() => import("../pages/Stories.jsx"));
-const Explore = lazy(() => import("../pages/Explore.jsx"));
-const Trending = lazy(() => import("../pages/Trending.jsx"));
-const Feed = lazy(() => import("../pages/Feed.jsx"));
-const StudyBuddyMatcher = lazy(() => import("../pages/StudyBuddyMatcher.jsx"));
-const InstructorDashboard = lazy(() => import("../pages/InstructorDashboard.jsx"));
-const ResumeBuilder = lazy(() => import("../pages/ResumeBuilder.jsx"));
-const ATSResume = lazy(() => import("../pages/ATSResume.jsx"));
-const AlumniResumeReview = lazy(() => import("../pages/AlumniResumeReview.jsx"));
-const AlumniConnect = lazy(() => import("../pages/AlumniConnect.jsx"));
-const NotFound = lazy(() => import("../pages/NotFound.jsx"));
+const Home = lazy(() => import("../pages/Home"));
+const CreatePost = lazy(() => import("../components/CreatePost"));
+const CoursesLanding = lazy(() => import("../pages/CoursesLanding"));
+const LearningMode = lazy(() => import("../pages/LearningMode"));
+const Landing = lazy(() => import("../pages/Landing"));
+const Login = lazy(() => import("../pages/Login"));
+const Signup = lazy(() => import("../pages/Signup"));
+const ForgotPassword = lazy(() => import("../pages/ForgotPassword"));
+const NotificationCenter = lazy(() => import("../components/NotificationCenter"));
+const NotificationPreferences = lazy(() => import("../components/NotificationPreferences"));
+const SearchResults = lazy(() => import("../pages/SearchResults"));
+const ModerationDashboard = lazy(() => import("../pages/admin/ModerationDashboard"));
+const ReportDetail = lazy(() => import("../pages/admin/ReportDetail"));
+const Settings = lazy(() => import("../pages/Settings"));
+const Profile = lazy(() => import("../pages/Profile"));
+const EditProfile = lazy(() => import("../pages/EditProfile"));
+const Messages = lazy(() => import("../pages/Messages"));
+const More = lazy(() => import("../pages/More"));
+const Stories = lazy(() => import("../pages/Stories"));
+const Explore = lazy(() => import("../pages/Explore"));
+const Trending = lazy(() => import("../pages/Trending"));
+const Feed = lazy(() => import("../pages/Feed"));
+const StudyBuddyMatcher = lazy(() => import("../pages/StudyBuddyMatcher"));
+const InstructorDashboard = lazy(() => import("../pages/InstructorDashboard"));
+const ResumeBuilder = lazy(() => import("../pages/ResumeBuilder"));
+const ATSResume = lazy(() => import("../pages/ATSResume"));
+const AlumniResumeReview = lazy(() => import("../pages/AlumniResumeReview"));
+const AlumniConnect = lazy(() => import("../pages/AlumniConnect"));
+const NotFound = lazy(() => import("../pages/NotFound"));
+
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
 
 // Protected Route wrapper
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
-  
+
   console.log('🔐 ProtectedRoute check:', { hasUser: !!user, loading });
 
   // Always show loading skeleton while authentication is being verified
@@ -77,11 +85,22 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-const AppRoutes = ({
-  activeTab,
-  setActiveTab,
-  searchQuery,
-  setSearchQuery,
+interface AppRoutesProps {
+  props: {
+    activeTab: string;
+    setActiveTab: (tab: string) => void;
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
+  };
+}
+
+const AppRoutes: React.FC<AppRoutesProps> = ({
+  props: {
+    activeTab,
+    setActiveTab,
+    searchQuery,
+    setSearchQuery,
+  }
 }) => {
   const { user } = useAuth();
 

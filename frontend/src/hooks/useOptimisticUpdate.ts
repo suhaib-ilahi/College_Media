@@ -1,38 +1,33 @@
-/**
- * useOptimisticUpdate Hook
- * Issue #410: Implement Optimistic UI Updates with Automatic Rollback
- * 
- * A custom hook for implementing optimistic UI updates with automatic rollback on failure.
- * Provides instant user feedback while API calls process in the background.
- */
-
 import { useState, useCallback, useRef } from 'react';
 import toast from 'react-hot-toast';
 
-/**
- * useOptimisticUpdate
- * 
- * @param {Object} options - Configuration options
- * @param {*} options.initialState - Initial state value
- * @param {Function} options.updateFn - Async function to call API (receives new value)
- * @param {Function} [options.optimisticUpdateFn] - Function to compute optimistic value (receives current state)
- * @param {Function} [options.onSuccess] - Callback on successful update
- * @param {Function} [options.onError] - Callback on failed update
- * @param {string} [options.errorMessage] - Custom error message for toast
- * @returns {Object} { data, isUpdating, optimisticUpdate, rollback, reset }
- */
-const useOptimisticUpdate = ({
+interface UseOptimisticUpdateOptions<T> {
+    initialState: T;
+    updateFn: (newValue: T) => Promise<any>;
+    optimisticUpdateFn?: (currentState: T) => T;
+    onSuccess?: (result: any) => void;
+    onError?: (error: any) => void;
+    errorMessage?: string;
+}
+
+interface UpdateQueueItem<T> {
+    newValue: T;
+    resolve: (value: any) => void;
+    reject: (reason?: any) => void;
+}
+
+const useOptimisticUpdate = <T>({
     initialState,
     updateFn,
     optimisticUpdateFn,
     onSuccess,
     onError,
     errorMessage = 'Update failed. Please try again.'
-}) => {
-    const [data, setData] = useState(initialState);
+}: UseOptimisticUpdateOptions<T>) => {
+    const [data, setData] = useState<T>(initialState);
     const [isUpdating, setIsUpdating] = useState(false);
-    const previousValue = useRef(initialState);
-    const updateQueue = useRef([]);
+    const previousValue = useRef<T>(initialState);
+    const updateQueue = useRef<UpdateQueueItem<T>[]>([]);
     const isProcessing = useRef(false);
 
     // Process queued updates sequentially
@@ -40,7 +35,13 @@ const useOptimisticUpdate = ({
         if (isProcessing.current || updateQueue.current.length === 0) return;
 
         isProcessing.current = true;
-        const { newValue, resolve, reject } = updateQueue.current.shift();
+        const item = updateQueue.current.shift();
+        if (!item) {
+            isProcessing.current = false;
+            return;
+        }
+
+        const { newValue, resolve, reject } = item;
 
         try {
             const result = await updateFn(newValue);
@@ -73,9 +74,9 @@ const useOptimisticUpdate = ({
 
     /**
      * Perform optimistic update
-     * @param {*} [customValue] - Optional custom value (if not using optimisticUpdateFn)
+     * @param {customValue} [customValue] - Optional custom value (if not using optimisticUpdateFn)
      */
-    const optimisticUpdate = useCallback(async (customValue) => {
+    const optimisticUpdate = useCallback(async (customValue?: T) => {
         // Store current value for potential rollback
         previousValue.current = data;
 

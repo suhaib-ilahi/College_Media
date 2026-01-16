@@ -5,19 +5,17 @@ import ReportButton from "./ReportButton";
 import PollDisplay from "./PollDisplay";
 import { usePollByPost } from "../hooks/usePolls";
 import ProgressiveImage from "./ProgressiveImage";
-import useOptimisticUpdate from "../hooks/useOptimisticUpdate"; // Added missing import
+import useOptimisticUpdate from "../hooks/useOptimisticUpdate";
+import { Post as IPost } from "../types";
 
-/**
- * Post Component
- * Individual post display with user info, media, interactions, and caption.
- * @param {Object} props - The component props
- * @param {Object} props.post - Post object containing user, media, caption, likes, etc.
- * @param {Function} props.onLike - Handler for like toggle
- * @param {Function} props.onCopyLink - Handler for copying post link
- * @param {boolean} props.copiedLink - Whether the link has been copied
- * @returns {JSX.Element} The post JSX element
- */
-const Post = ({
+interface PostProps {
+  post: IPost;
+  onLike?: (id: string) => Promise<void>;
+  onCopyLink: (post: IPost) => void;
+  copiedLink: string | null;
+}
+
+const Post: React.FC<PostProps> = ({
   post,
   onLike,
   onCopyLink,
@@ -30,14 +28,13 @@ const Post = ({
   // Optimistic update for likes
   const { data: likes, isUpdating: isLiking, optimisticUpdate: updateLike } = useOptimisticUpdate({
     initialState: post.likes,
-    updateFn: async (newLikes) => {
-      // Call the parent's onLike handler which should return a promise
+    updateFn: async (newLikes: number) => {
       if (onLike) {
         await onLike(post.id);
       }
       return newLikes;
     },
-    optimisticUpdateFn: (currentLikes) => post.liked ? currentLikes - 1 : currentLikes + 1,
+    optimisticUpdateFn: (currentLikes: number) => post.liked ? currentLikes - 1 : currentLikes + 1,
     errorMessage: t('post.likeError')
   });
 
@@ -96,7 +93,7 @@ const Post = ({
       {post.imageUrl && (
         <ProgressiveImage
           src={post.imageUrl}
-          placeholder={post.thumbnailUrl} // Optional: use if available
+          placeholder={post.thumbnailUrl}
           alt={`Post by ${post.user.username}`}
           className="w-full object-cover"
         />

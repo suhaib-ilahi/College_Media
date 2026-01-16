@@ -9,7 +9,19 @@
 import React, { useRef, useEffect, useState } from 'react';
 import useProgressiveImage from '../hooks/useProgressiveImage';
 
-const ProgressiveImage = ({
+interface ProgressiveImageProps {
+    src: string;
+    placeholder?: string;
+    alt?: string;
+    className?: string;
+    style?: React.CSSProperties;
+    onLoad?: () => void;
+    onError?: (error: any) => void;
+    lazy?: boolean;
+    [key: string]: any;
+}
+
+const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
     src,
     placeholder,
     alt = '',
@@ -21,7 +33,7 @@ const ProgressiveImage = ({
     ...props
 }) => {
     const [isInView, setIsInView] = useState(!lazy);
-    const imgRef = useRef(null);
+    const imgRef = useRef<HTMLImageElement>(null);
 
     // Only load image when in viewport (lazy loading)
     useEffect(() => {
