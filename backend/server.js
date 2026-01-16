@@ -33,6 +33,7 @@ const { randomUUID } = require("crypto");
    🔧 INTERNAL IMPORTS
 ============================================================ */
 const { initDB } = require("./config/db");
+const { initSecrets } = require("./config/vault");
 const { notFound } = require("./middleware/errorMiddleware");
 const logger = require("./utils/logger");
 
@@ -242,6 +243,7 @@ app.use((err, req, res, next) => {
 let dbConnection;
 
 const startServer = async () => {
+  await initSecrets();
   dbConnection = await initDB();
   warmUpCache({
     User: require("./models/User"),
