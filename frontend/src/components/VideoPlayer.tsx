@@ -1,9 +1,16 @@
 import React, { useEffect, useRef } from 'react';
+// @ts-ignore
 import Hls from 'hls.js';
 
-const VideoPlayer = ({ src, poster, autoPlay = false }) => {
-    const videoRef = useRef(null);
-    const hlsRef = useRef(null);
+interface VideoPlayerProps {
+    src: string;
+    poster?: string;
+    autoPlay?: boolean;
+}
+
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, autoPlay = false }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const hlsRef = useRef<any>(null);
 
     useEffect(() => {
         const video = videoRef.current;
@@ -31,7 +38,7 @@ const VideoPlayer = ({ src, poster, autoPlay = false }) => {
                 }
             });
 
-            hls.on(Hls.Events.ERROR, (e, data) => {
+            hls.on(Hls.Events.ERROR, (e: any, data: any) => {
                 if (data.fatal) {
                     console.error('❌ HLS Fatal Error:', data);
                 }
