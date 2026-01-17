@@ -73,3 +73,26 @@ export interface Collection {
     createdAt: string;
     updatedAt: string;
 }
+
+export type WhiteboardElementType = 'pencil' | 'rect' | 'circle' | 'text' | 'line';
+
+export interface WhiteboardElement {
+    id: string;
+    type: WhiteboardElementType;
+    points?: number[];
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+    fill?: string;
+    stroke?: string;
+    strokeWidth?: number;
+    text?: string;
+    rotation?: number;
+}
+
+export interface WhiteboardParticipant {
+    user: string | User;
+    joinedAt: string;
+    isDrawing: boolean;
+}
