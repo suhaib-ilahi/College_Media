@@ -4,10 +4,13 @@ const jwt = require('jsonwebtoken');
 const Post = require('../models/Post');
 const User = require('../models/User');
 const ModerationService = require('../services/moderationService');
-const RecommenderService = require('../services/recommender');
+const RecommendationEngine = require('../services/recommendationEngine');
+const EventPublisher = require('../events/publisher');
+const AIModerator = require('../services/aiModerator');
 const logger = require('../utils/logger');
 const { apiLimiter } = require('../middleware/rateLimitMiddleware');
 const { checkPermission, PERMISSIONS } = require('../middleware/rbacMiddleware');
+const EmbeddingService = require('../services/embeddingService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'college_media_secret_key';
 
@@ -99,10 +102,7 @@ router.post('/', verifyToken, apiLimiter, async (req, res) => {
     try {
         const { content, tags, visibility, images } = req.body;
 
-        // Check content safety asynchronously
-        ModerationService.checkAndFlag(content, 'Post', null, req.userId).catch(err =>
-            logger.error('Content safety check failed:', err)
-        );
+
 
         const post = await Post.create({
             author: req.userId,
@@ -111,6 +111,21 @@ router.post('/', verifyToken, apiLimiter, async (req, res) => {
             visibility,
             images
         });
+
+        // 🧠 Generate Embedding Asynchronously
+        if (content) {
+            EmbeddingService.generateEmbedding(content)
+                .then(vector => {
+                    if (vector) {
+                        post.embedding = vector;
+                        post.save().catch(err => logger.error('Embedding Save Error', err));
+                    }
+                })
+                .catch(err => logger.error('Embedding Generation Failed', err));
+        }
+
+        // Trigger AI Moderation Scan
+        AIModerator.scan(post._id, 'Post', content, images && images.length > 0 ? images[0] : null);
 
         // Update targetId for content safety check
         ModerationService.checkAndFlag(content, 'Post', post._id, req.userId);
@@ -138,10 +153,18 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
         const { postId } = req.params;
 
         // Track interaction for recommendations
-        await RecommenderService.trackInteraction(req.userId, postId, 'post', 'like');
+        await RecommendationEngine.trackInteraction(req.userId, postId, 'Post', 'LIKE');
 
-        // Update like count
-        await Post.findByIdAndUpdate(postId, { $inc: { likeCount: 1 } });
+        // Update like count and get post
+        const post = await Post.findByIdAndUpdate(postId, { $inc: { likeCount: 1 } }, { new: true });
+
+        if (post && post.author.toString() !== req.userId) {
+            EventPublisher.publish('POST_LIKED', {
+                targetUserId: post.author,
+                actorId: req.userId,
+                postId: post._id
+            });
+        }
 
         res.json({ success: true, message: 'Post liked' });
     } catch (error) {

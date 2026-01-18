@@ -1,215 +1,190 @@
-import { useContext, useState, useCallback } from 'react';
-import ModerationContext from '../context/ModerationContext';
-
 /**
- * Main hook to access moderation context
+ * useModeration Hook
+ * Issue #901: Content Moderation System with AI-Assisted Detection
+ * 
+ * React hook for managing moderation state and actions.
  */
-export const useModeration = () => {
-  const context = useContext(ModerationContext);
-  if (!context) {
-    throw new Error('useModeration must be used within a ModerationProvider');
-  }
-  return context;
+
+import { useState, useCallback } from 'react';
+import { moderationApi } from '../api/endpoints';
+import toast from 'react-hot-toast';
+
+const useModeration = () => {
+    const [queue, setQueue] = useState([]);
+    const [appeals, setAppeals] = useState([]);
+    const [filters, setFilters] = useState([]);
+    const [statistics, setStatistics] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    // Fetch moderation queue
+    const fetchQueue = useCallback(async (options = {}) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const params = new URLSearchParams();
+            if (options.status) params.append('status', options.status);
+            if (options.page) params.append('page', options.page);
+            if (options.limit) params.append('limit', options.limit);
+            if (options.category) params.append('category', options.category);
+            if (options.priority) params.append('priority', options.priority);
+
+            const response = await moderationApi.getQueue(params.toString());
+            setQueue(response.data.data.items || []);
+            return response.data;
+        } catch (err) {
+            setError(err.message);
+            toast.error('Failed to fetch moderation queue');
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Analyze content with AI
+    const analyzeContent = useCallback(async (content) => {
+        setLoading(true);
+        try {
+            const response = await moderationApi.analyze(content);
+            return response.data.data;
+        } catch (err) {
+            toast.error('Content analysis failed');
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Take moderation action
+    const takeAction = useCallback(async (queueItemId, action, reason, notes = '') => {
+        setLoading(true);
+        try {
+            const response = await moderationApi.takeAction(queueItemId, { action, reason, notes });
+            toast.success(`Action "${action}" completed`);
+            // Refresh queue
+            await fetchQueue();
+            return response.data;
+        } catch (err) {
+            toast.error('Failed to take action');
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, [fetchQueue]);
+
+    // Bulk action
+    const bulkAction = useCallback(async (itemIds, action, reason) => {
+        setLoading(true);
+        try {
+            const response = await moderationApi.bulkAction({ itemIds, action, reason });
+            const successCount = response.data.data.filter(r => r.success).length;
+            toast.success(`Bulk action completed: ${successCount}/${itemIds.length} items`);
+            await fetchQueue();
+            return response.data;
+        } catch (err) {
+            toast.error('Bulk action failed');
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, [fetchQueue]);
+
+    // Fetch appeals
+    const fetchAppeals = useCallback(async (options = {}) => {
+        setLoading(true);
+        try {
+            const response = await moderationApi.getAppeals(options);
+            setAppeals(response.data.data.appeals || []);
+            return response.data;
+        } catch (err) {
+            toast.error('Failed to fetch appeals');
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Submit appeal
+    const submitAppeal = useCallback(async (actionId, reason, evidence = []) => {
+        setLoading(true);
+        try {
+            const response = await moderationApi.submitAppeal({ actionId, reason, evidence });
+            toast.success('Appeal submitted successfully');
+            return response.data;
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to submit appeal');
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Fetch filters
+    const fetchFilters = useCallback(async (options = {}) => {
+        setLoading(true);
+        try {
+            const response = await moderationApi.getFilters(options);
+            setFilters(response.data.data || []);
+            return response.data;
+        } catch (err) {
+            toast.error('Failed to fetch filters');
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Create filter
+    const createFilter = useCallback(async (filterData) => {
+        setLoading(true);
+        try {
+            const response = await moderationApi.createFilter(filterData);
+            toast.success('Filter created successfully');
+            await fetchFilters();
+            return response.data;
+        } catch (err) {
+            toast.error('Failed to create filter');
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, [fetchFilters]);
+
+    // Fetch statistics
+    const fetchStatistics = useCallback(async (startDate, endDate) => {
+        setLoading(true);
+        try {
+            const response = await moderationApi.getStatistics({ startDate, endDate });
+            setStatistics(response.data.data);
+            return response.data;
+        } catch (err) {
+            toast.error('Failed to fetch statistics');
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    return {
+        // State
+        queue,
+        appeals,
+        filters,
+        statistics,
+        loading,
+        error,
+
+        // Actions
+        fetchQueue,
+        analyzeContent,
+        takeAction,
+        bulkAction,
+        fetchAppeals,
+        submitAppeal,
+        fetchFilters,
+        createFilter,
+        fetchStatistics
+    };
 };
 
-/**
- * Hook for report submission (for regular users)
- */
-export const useReportSubmission = () => {
-  const { submitReport } = useModeration();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-
-  const submit = useCallback(async (reportData) => {
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      const result = await submitReport(reportData);
-      return result;
-    } catch (err) {
-      setError(err.message || 'Failed to submit report');
-      throw err;
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [submitReport]);
-
-  return {
-    submit,
-    isSubmitting,
-    error,
-  };
-};
-
-/**
- * Hook for admin actions on reports
- */
-export const useModerationActions = () => {
-  const { takeAction, bulkAction, dismissReport } = useModeration();
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const performAction = useCallback(async (reportId, action, notes = '') => {
-    setIsProcessing(true);
-    try {
-      await takeAction(reportId, action, notes);
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [takeAction]);
-
-  const performBulkAction = useCallback(async (reportIds, action, notes = '') => {
-    setIsProcessing(true);
-    try {
-      await bulkAction(reportIds, action, notes);
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [bulkAction]);
-
-  const dismiss = useCallback(async (reportId, reason = '') => {
-    setIsProcessing(true);
-    try {
-      await dismissReport(reportId, reason);
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [dismissReport]);
-
-  return {
-    performAction,
-    performBulkAction,
-    dismiss,
-    isProcessing,
-  };
-};
-
-/**
- * Hook for fetching reports with filters
- */
-export const useReports = () => {
-  const { reports, loading, filters, pagination, fetchReports, updateFilters, resetFilters } = useModeration();
-
-  const loadMore = useCallback(() => {
-    if (!loading && pagination.hasMore) {
-      fetchReports(pagination.page + 1, false);
-    }
-  }, [loading, pagination, fetchReports]);
-
-  const refresh = useCallback(() => {
-    fetchReports(1, true);
-  }, [fetchReports]);
-
-  const applyFilters = useCallback((newFilters) => {
-    updateFilters(newFilters);
-    // Fetch with new filters will be triggered by context useEffect
-    setTimeout(() => fetchReports(1, true), 0);
-  }, [updateFilters, fetchReports]);
-
-  const clearFilters = useCallback(() => {
-    resetFilters();
-    setTimeout(() => fetchReports(1, true), 0);
-  }, [resetFilters, fetchReports]);
-
-  return {
-    reports,
-    loading,
-    filters,
-    pagination,
-    loadMore,
-    refresh,
-    applyFilters,
-    clearFilters,
-  };
-};
-
-/**
- * Hook for moderation statistics
- */
-export const useModerationStats = () => {
-  const { statistics, fetchStatistics } = useModeration();
-  const [loading, setLoading] = useState(false);
-
-  const refreshStats = useCallback(async () => {
-    setLoading(true);
-    try {
-      await fetchStatistics();
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchStatistics]);
-
-  return {
-    statistics,
-    loading,
-    refreshStats,
-  };
-};
-
-/**
- * Hook for appeal submission
- */
-export const useAppeal = () => {
-  const { submitAppeal } = useModeration();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-
-  const submit = useCallback(async (reportId, appealData) => {
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      const result = await submitAppeal(reportId, appealData);
-      return result;
-    } catch (err) {
-      setError(err.message || 'Failed to submit appeal');
-      throw err;
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [submitAppeal]);
-
-  return {
-    submit,
-    isSubmitting,
-    error,
-  };
-};
-
-/**
- * Hook to check if content should be auto-flagged
- */
-export const useAutoFlag = () => {
-  const { checkAutoFlag } = useModeration();
-  return { checkAutoFlag };
-};
-
-/**
- * Hook for report details
- */
-export const useReportDetails = (reportId) => {
-  const { fetchReportDetails } = useModeration();
-  const [report, setReport] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const loadDetails = useCallback(async () => {
-    if (!reportId) return;
-    
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await fetchReportDetails(reportId);
-      setReport(data);
-    } catch (err) {
-      setError(err.message || 'Failed to load report details');
-    } finally {
-      setLoading(false);
-    }
-  }, [reportId, fetchReportDetails]);
-
-  return {
-    report,
-    loading,
-    error,
-    loadDetails,
-  };
-};
+export default useModeration;

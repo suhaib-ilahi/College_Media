@@ -1,99 +1,184 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useDebounce } from './useDebounce';
-import { searchApi } from '../api/endpoints';
-import { addToSearchHistory, getSearchHistory } from '../utils/searchHistory';
-
 /**
- * Custom hook for managing search functionality
- * Handles debouncing, suggestions, history, and results
+ * useSearch Hook
+ * Issue #910: Advanced Search with Elasticsearch Integration
+ * 
+ * React hook for managing advanced search state and operations.
  */
-export const useSearch = () => {
-  const [query, setQuery] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({
-    type: 'all', // all, posts, users, comments
-    dateRange: 'all', // all, today, week, month, year
-    sortBy: 'relevance', // relevance, recent, popular
-  });
-  const debouncedQuery = useDebounce(query, 300);
 
-  // Fetch suggestions for auto-complete
-  const fetchSuggestions = useCallback(async (searchQuery) => {
-    if (!searchQuery.trim()) {
-      setSuggestions([]);
-      return;
-    }
+import { useState, useCallback, useEffect } from 'react';
+import { searchApi } from '../api/endpoints';
+import toast from 'react-hot-toast';
 
-    try {
-      const data = await searchApi.getSuggestions(searchQuery);
-      setSuggestions(data);
-    } catch (error) {
-      console.error('Failed to fetch suggestions:', error);
-      setSuggestions([]);
-    }
-  }, []);
+const useSearch = () => {
+    const [results, setResults] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filters, setFilters] = useState({
+        type: 'all',
+        tags: [],
+        author: '',
+        dateRange: {},
+        sortBy: 'relevance'
+    });
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 20,
+        total: 0,
+        totalPages: 0
+    });
+    const [aggregations, setAggregations] = useState({});
 
-  // Fetch search results
-  const fetchResults = useCallback(async (searchQuery, searchFilters) => {
-    if (!searchQuery.trim()) {
-      setResults([]);
-      return;
-    }
+    /**
+     * Perform search
+     */
+    const search = useCallback(async (query = searchQuery, page = 1) => {
+        if (!query.trim()) {
+            setResults([]);
+            return;
+        }
 
-    setLoading(true);
-    try {
-      const data = await searchApi.search(searchQuery, searchFilters);
-      setResults(data);
-      addToSearchHistory(searchQuery);
-    } catch (error) {
-      console.error('Search failed:', error);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        setLoading(true);
+        try {
+            const response = await searchApi.advancedSearch({
+                query,
+                type: filters.type,
+                filters,
+                page,
+                limit: pagination.limit,
+                sortBy: filters.sortBy
+            });
 
-  // Auto-fetch suggestions when query changes
-  useEffect(() => {
-    if (debouncedQuery) {
-      fetchSuggestions(debouncedQuery);
-    }
-  }, [debouncedQuery, fetchSuggestions]);
+            setResults(response.data.data.results);
+            setPagination({
+                page: response.data.data.page,
+                limit: response.data.data.limit,
+                total: response.data.data.total,
+                totalPages: response.data.data.totalPages
+            });
+            setAggregations(response.data.data.aggregations || {});
+        } catch (error) {
+            console.error('Search error:', error);
+            toast.error('Search failed');
+            setResults([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [searchQuery, filters, pagination.limit]);
 
-  // Execute search
-  const executeSearch = useCallback((searchQuery = query) => {
-    fetchResults(searchQuery, filters);
-  }, [query, filters, fetchResults]);
+    /**
+     * Get autocomplete suggestions
+     */
+    const getAutocomplete = useCallback(async (query) => {
+        if (!query || query.length < 2) {
+            setSuggestions([]);
+            return;
+        }
 
-  // Update filters
-  const updateFilters = useCallback((newFilters) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-  }, []);
+        try {
+            const response = await searchApi.autocomplete(query, filters.type);
+            setSuggestions(response.data.data.suggestions || []);
+        } catch (error) {
+            console.error('Autocomplete error:', error);
+            setSuggestions([]);
+        }
+    }, [filters.type]);
 
-  // Clear search
-  const clearSearch = useCallback(() => {
-    setQuery('');
-    setSuggestions([]);
-    setResults([]);
-  }, []);
+    /**
+     * Update search query
+     */
+    const updateQuery = useCallback((query) => {
+        setSearchQuery(query);
+        if (query.length >= 2) {
+            getAutocomplete(query);
+        } else {
+            setSuggestions([]);
+        }
+    }, [getAutocomplete]);
 
-  // Get search history
-  const history = getSearchHistory();
+    /**
+     * Update filters
+     */
+    const updateFilters = useCallback((newFilters) => {
+        setFilters(prev => ({ ...prev, ...newFilters }));
+    }, []);
 
-  return {
-    query,
-    setQuery,
-    suggestions,
-    results,
-    loading,
-    filters,
-    updateFilters,
-    executeSearch,
-    clearSearch,
-    history,
-  };
+    /**
+     * Clear filters
+     */
+    const clearFilters = useCallback(() => {
+        setFilters({
+            type: 'all',
+            tags: [],
+            author: '',
+            dateRange: {},
+            sortBy: 'relevance'
+        });
+    }, []);
+
+    /**
+     * Go to next page
+     */
+    const nextPage = useCallback(() => {
+        if (pagination.page < pagination.totalPages) {
+            search(searchQuery, pagination.page + 1);
+        }
+    }, [pagination, search, searchQuery]);
+
+    /**
+     * Go to previous page
+     */
+    const prevPage = useCallback(() => {
+        if (pagination.page > 1) {
+            search(searchQuery, pagination.page - 1);
+        }
+    }, [pagination, search, searchQuery]);
+
+    /**
+     * Go to specific page
+     */
+    const goToPage = useCallback((page) => {
+        if (page >= 1 && page <= pagination.totalPages) {
+            search(searchQuery, page);
+        }
+    }, [pagination.totalPages, search, searchQuery]);
+
+    /**
+     * Clear search
+     */
+    const clearSearch = useCallback(() => {
+        setSearchQuery('');
+        setResults([]);
+        setSuggestions([]);
+        setPagination({
+            page: 1,
+            limit: 20,
+            total: 0,
+            totalPages: 0
+        });
+    }, []);
+
+    return {
+        // State
+        results,
+        suggestions,
+        loading,
+        searchQuery,
+        filters,
+        pagination,
+        aggregations,
+
+        // Actions
+        search,
+        updateQuery,
+        updateFilters,
+        clearFilters,
+        nextPage,
+        prevPage,
+        goToPage,
+        clearSearch,
+        getAutocomplete
+    };
 };
 
 export default useSearch;

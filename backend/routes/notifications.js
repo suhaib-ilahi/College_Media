@@ -1,65 +1,36 @@
+/**
+ * Enhanced Notification Routes
+ * Real-time notifications with comprehensive management
+ */
+
 const express = require('express');
 const router = express.Router();
+const notificationController = require('../controllers/notificationController');
+const { protect } = require('../middleware/authMiddleware');
 
-// Mock notifications data
-const mockNotifications = [];
+// Get notifications with filters and pagination
+router.get('/', protect, notificationController.getNotifications);
 
-/**
- * GET /api/notifications
- * Fetch user notifications
- */
-router.get('/', async (req, res) => {
-  try {
-    const { limit = 20 } = req.query;
-    
-    // Return empty array for now
-    res.json({
-      success: true,
-      data: mockNotifications.slice(0, parseInt(limit)),
-      unreadCount: 0
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch notifications'
-    });
-  }
-});
+// Get unread count
+router.get('/unread-count', protect, notificationController.getUnreadCount);
 
-/**
- * PATCH /api/notifications/:id/read
- * Mark notification as read
- */
-router.patch('/:id/read', async (req, res) => {
-  try {
-    res.json({
-      success: true,
-      message: 'Notification marked as read'
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to mark notification as read'
-    });
-  }
-});
+// Preferences
+router.get('/preferences', protect, notificationController.getPreferences);
+router.put('/preferences', protect, notificationController.updatePreferences);
 
-/**
- * PATCH /api/notifications/mark-all-read
- * Mark all notifications as read
- */
-router.patch('/mark-all-read', async (req, res) => {
-  try {
-    res.json({
-      success: true,
-      message: 'All notifications marked as read'
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to mark all notifications as read'
-    });
-  }
-});
+// Device management
+router.post('/devices', protect, notificationController.registerDevice);
+router.delete('/devices/:deviceId', protect, notificationController.unregisterDevice);
+
+// Mark as read
+router.put('/:id/read', protect, notificationController.markAsRead);
+router.put('/read-all', protect, notificationController.markAllAsRead);
+router.put('/batch-read', protect, notificationController.batchMarkAsRead);
+
+// Delete notification
+router.delete('/:id', protect, notificationController.deleteNotification);
+
+// Create notification (admin/internal)
+router.post('/', protect, notificationController.createNotification);
 
 module.exports = router;
