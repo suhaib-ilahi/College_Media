@@ -1,42 +1,86 @@
-import { Link } from 'react-router-dom';
+import { useContext, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 export default function Navbar() {
-  const getCurrentUserId = () => {
-    const token = localStorage.getItem('token');
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.userId;
-    } catch {
-      return null;
-    }
-  };
+  const { user, isAuthenticated, logout } = useContext(AuthContext);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const navigate = useNavigate();
 
-  const currentUserId = getCurrentUserId();
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+    setShowDropdown(false);
+  };
 
   return (
     <nav>
       <div className="container nav-container">
-        <div className="logo">
+        <Link to="/" className="logo" style={{ textDecoration: 'none' }}>
           <div className="logo-icon">C</div>
           <span>ProjectX</span>
-        </div>
+        </Link>
 
         <div className="nav-links">
           <ul>
             <li><a href="#features">Features</a></li>
             <li><a href="#about">About</a></li>
             <li><a href="#team">Team</a></li>
-            {currentUserId && (
-              <li>
-                <Link to={`/profile/${currentUserId}`}>Profile</Link>
+            {isAuthenticated ? (
+              <li style={{ position: 'relative' }}>
+                <button 
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="btn btn-primary"
+                  style={{ cursor: 'pointer' }}
+                >
+                  {user?.name || 'User'} ▼
+                </button>
+                {showDropdown && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    marginTop: '0.5rem',
+                    backgroundColor: 'white',
+                    borderRadius: '0.5rem',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    minWidth: '160px',
+                    zIndex: 1000
+                  }}>
+                    <button
+                      onClick={handleLogout}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem 1rem',
+                        textAlign: 'left',
+                        border: 'none',
+                        background: 'none',
+                        cursor: 'pointer',
+                        color: '#ef4444',
+                        fontWeight: '500'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
               </li>
+            ) : (
+              <>
+                <li>
+                  <Link to="/login" className="btn btn-secondary">
+                    Login
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/signup" className="btn btn-primary">
+                    Sign Up
+                  </Link>
+                </li>
+              </>
             )}
-            <li>
-              <a href="#get-started" className="btn btn-primary">
-                Get Started
-              </a>
-            </li>
           </ul>
         </div>
       </div>

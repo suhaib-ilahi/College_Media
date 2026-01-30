@@ -1,6 +1,6 @@
 # College Media
 
-A full-stack social media platform built for college students to connect, share posts, and engage with their community. This MERN stack application allows users to register, login, create posts with text and images, like posts, and comment on them.
+A full-stack social media platform built for college students to connect, share posts, and engage with their community. This MERN stack application allows users to register, login, create posts with text and images, like posts, and interact with an AI chatbot.
 
 ## Tech Stack
 
@@ -15,177 +15,181 @@ A full-stack social media platform built for college students to connect, share 
 - User registration and login with JWT authentication
 - Create, view, and interact with posts (text and images)
 - Like and unlike posts
-- Comment on posts
+- AI-powered chatbot for user assistance
 - Responsive design with Material-UI and Tailwind CSS
 - Secure API endpoints with authentication middleware
+
+## Chatbot
+
+The application includes a built-in chatbot that provides information about the platform's features. The chatbot is implemented as a client-side service with predefined responses for common queries.
 
 ## Installation
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- MongoDB (local or cloud instance like MongoDB Atlas)
-- npm or yarn
+Before you begin, ensure you have the following installed:
 
-### Backend Setup
+- **Node.js** (v18 or higher) - [Download from nodejs.org](https://nodejs.org/)
+- **MongoDB** - Choose one of the following options:
+  - **MongoDB Atlas** (Cloud): Free tier available at [mongodb.com/atlas](https://www.mongodb.com/atlas)
+  - **Local MongoDB**: Install from [mongodb.com/try/download/community](https://www.mongodb.com/try/download/community)
+- **Git** - [Download from git-scm.com](https://git-scm.com/)
+- **npm** or **yarn** (comes with Node.js)
+
+### Quick Setup (Recommended)
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Ewocs/College_Media.git
+   cd College_Media
+   ```
+
+2. **Environment Setup:**
+   ```bash
+   # Copy environment template
+   cp backend/.env.example backend/.env
+   ```
+
+3. **Edit the `.env` file** in the `backend` directory:
+   ```env
+   MONGODB_URI=mongodb://localhost:27017/college-media
+   # OR for MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/college-media
+   JWT_SECRET=your_super_secret_jwt_key_here
+   PORT=5000
+   NODE_ENV=development
+   # Optional: Email configuration for welcome emails
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
+   EMAIL_USER=your-email@gmail.com
+   EMAIL_PASS=your-app-password
+   EMAIL_FROM=your-email@gmail.com
+   ```
+
+4. **Install dependencies and start services:**
+   ```bash
+   # Backend
+   cd backend
+   npm install
+   npm run dev
+
+   # Frontend (in a new terminal)
+   cd ../frontend
+   npm install
+   npm run dev
+   ```
+
+5. **Access the application:**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:5000
+
+### Manual Setup
+
+#### Backend Setup
 
 1. Navigate to the backend directory:
-   ```
+   ```bash
    cd backend
    ```
 
 2. Install dependencies:
-   ```
+   ```bash
    npm install
    ```
 
-3. Create a `.env` file in the backend directory with the following variables (refer to `.env.example` for a template):
-
-   - **PORT**: The port number on which the server will run. Defaults to 5000 if not specified.
-   - **MONGODB_URI**: The connection string for your MongoDB database. Use a local MongoDB instance or a cloud service like MongoDB Atlas. Defaults to `mongodb://localhost:27017/college-media` if not specified.
-   - **JWT_SECRET**: A secret key used for signing JSON Web Tokens (JWT) for authentication. This should be a strong, random string to ensure security. Change this in production to a unique value.
-
-   Example `.env` file:
-   ```
-   PORT=5000
+3. Create a `.env` file in the backend directory with the following variables:
+   ```env
    MONGODB_URI=mongodb://localhost:27017/college-media
-   JWT_SECRET=your_secure_jwt_secret_here
+   JWT_SECRET=your_jwt_secret_here
+   PORT=5000
+   NODE_ENV=development
+   # Optional: Email configuration for welcome emails
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
+   EMAIL_USER=your-email@gmail.com
+   EMAIL_PASS=your-app-password
+   EMAIL_FROM=your-email@gmail.com
    ```
 
 4. Start the backend server:
-   ```
+   ```bash
    npm run dev
    ```
    The server will run on `http://localhost:5000`.
 
-### Frontend Setup
+#### Frontend Setup
 
 1. Navigate to the frontend directory:
-   ```
+   ```bash
    cd frontend
    ```
 
 2. Install dependencies:
-   ```
+   ```bash
    npm install
    ```
 
 3. Start the development server:
-   ```
+   ```bash
    npm run dev
    ```
    The app will run on `http://localhost:5173` (default Vite port).
 
-## Local Development Setup Guide
+### Environment Setup Verification
 
-This guide provides a comprehensive step-by-step process to set up the College Media project for local development. It includes prerequisites, environment configuration, and troubleshooting for common issues.
+After setup, verify everything is working:
 
-### Prerequisites
-
-Before starting, ensure you have the following installed on your system:
-
-- **Node.js**: Version 14 or higher. Download from [nodejs.org](https://nodejs.org/). This includes npm (Node Package Manager).
-- **MongoDB**: A local MongoDB instance or a cloud service like MongoDB Atlas.
-  - For local MongoDB: Install from [mongodb.com](https://www.mongodb.com/try/download/community).
-  - For MongoDB Atlas: Create a free cluster at [mongodb.com/atlas](https://www.mongodb.com/atlas).
-- **Package Manager**: npm (comes with Node.js) or yarn (optional, install via `npm install -g yarn`).
-
-Verify installations:
-```bash
-node --version
-npm --version
-mongod --version  # For local MongoDB
-```
-
-### Environment Setup
-
-1. **Clone the Repository**:
+1. **Check Node.js version:**
    ```bash
-   git clone <repository-url>
-   cd college-media
+   node --version
+   # Should show v18.x.x or higher
    ```
 
-2. **Backend Setup**:
-   - Navigate to the backend directory:
-     ```bash
-     cd backend
-     ```
-   - Install dependencies:
-     ```bash
-     npm install
-     ```
-   - Create a `.env` file based on `.env.example`:
-     ```bash
-     cp .env.example .env
-     ```
-     Edit `.env` with your configurations:
-     ```
-     PORT=5000
-     MONGODB_URI=mongodb://localhost:27017/college-media  # Or your Atlas URI
-     JWT_SECRET=your_secure_jwt_secret_here
-     ```
-   - Start MongoDB (if using local):
-     ```bash
-     mongod  # On macOS/Linux, or use brew services start mongodb/brew/mongodb-community on macOS
-     ```
-     On Windows, start MongoDB as a service via Services panel or command prompt.
-   - Run the backend server:
-     ```bash
-     npm run dev
-     ```
-     Server should start on `http://localhost:5000`.
+2. **Check MongoDB connection:**
+   ```bash
+   # If using local MongoDB, ensure it's running
+   # You can test with MongoDB Compass or mongosh
+   ```
 
-3. **Frontend Setup**:
-   - Open a new terminal and navigate to the frontend directory:
-     ```bash
-     cd ../frontend
-     ```
-   - Install dependencies:
-     ```bash
-     npm install
-     ```
-   - Run the development server:
-     ```bash
-     npm run dev
-     ```
-     App should start on `http://localhost:5173`.
+3. **Test API endpoints:**
+   ```bash
+   curl http://localhost:5000
+   # Should return: {"message": "College Media Backend Running"}
+   ```
 
-4. **Verify Setup**:
-   - Backend: Visit `http://localhost:5000` (may show a simple message or API docs).
-   - Frontend: Visit `http://localhost:5173` to see the app.
+### Troubleshooting
 
-### Common Setup Errors and Fixes
+#### Common Issues
 
-- **Error: `npm install` fails with permission issues**:
-  - Fix: Use `sudo npm install` (not recommended) or fix npm permissions: `sudo chown -R $(whoami) ~/.npm`.
-  - Alternative: Use nvm for Node.js management.
+**"MongoServerError: Authentication failed"**
+- Check your MongoDB URI in `.env`
+- For MongoDB Atlas, ensure IP whitelist includes your IP
+- Verify username and password are correct
 
-- **Error: MongoDB connection fails**:
-  - Ensure MongoDB is running: Check with `ps aux | grep mongod` or Services panel.
-  - Verify `MONGODB_URI` in `.env`: For Atlas, ensure IP whitelist includes your IP (0.0.0.0/0 for testing).
-  - Local: Ensure MongoDB is installed and started on default port 27017.
+**"Port already in use"**
+```bash
+# Find process using port 5000
+lsof -i :5000
+# Kill the process or change PORT in .env
+```
 
-- **Error: Port already in use**:
-  - Backend: Change `PORT` in `.env` to an available port (e.g., 5001).
-  - Frontend: Vite may auto-assign a port; check console for the actual port.
+**"Module not found" errors**
+```bash
+# Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
 
-- **Error: `JWT_SECRET` not set**:
-  - Ensure `.env` file exists and contains `JWT_SECRET=your_secret_here`.
-  - Regenerate a new secret for security.
+**"CORS errors" in browser**
+- Ensure both frontend and backend are running
+- Check that backend allows requests from frontend origin
 
-- **Error: CORS issues in browser**:
-  - Ensure backend has CORS enabled (check `server.js`).
-  - Frontend proxy: In `vite.config.js`, add proxy for API calls.
+#### Alternative Setup Methods
 
-- **Error: Module not found during `npm install`**:
-  - Clear npm cache: `npm cache clean --force`.
-  - Delete `node_modules` and `package-lock.json`, then reinstall.
+**Using Docker (Coming Soon)**
+Docker setup instructions will be added in a future update.
 
-- **Error: Vite dev server not starting**:
-  - Check for port conflicts: Kill processes on port 5173 with `lsof -ti:5173 | xargs kill -9`.
-  - Ensure Node.js version is compatible.
-
-If issues persist, check the console logs for detailed error messages and refer to the project's GitHub issues or community forums.
+**Using yarn instead of npm**
+Replace `npm install` with `yarn install` and `npm run dev` with `yarn dev`.
 
 ## Usage
 
@@ -205,41 +209,257 @@ If issues persist, check the console logs for detailed error messages and refer 
 - `POST /api/posts` - Create a new post (requires authentication)
 - `PUT /api/posts/:id/like` - Like or unlike a post (requires authentication)
 
+For detailed API documentation, see [API.md](backend/API.md).
+
+## Environment Variables
+
+The backend requires several environment variables to function properly. These are configured in the `.env` file in the `backend` directory.
+
+### Required Variables
+
+| Variable Name | Description | Required |
+|---------------|-------------|----------|
+| `MONGODB_URI` | MongoDB connection string for the database | Yes |
+| `JWT_SECRET` | Secret key used for JWT token signing and verification | Yes |
+| `PORT` | Port number for the backend server to listen on | No (defaults to 5000) |
+| `NODE_ENV` | Environment mode (development/production) | No (defaults to development) |
+
+### Optional Variables (Email Configuration)
+
+| Variable Name | Description | Required |
+|---------------|-------------|----------|
+| `EMAIL_HOST` | SMTP server host for sending emails | No |
+| `EMAIL_PORT` | SMTP server port | No |
+| `EMAIL_USER` | SMTP server username | No |
+| `EMAIL_PASS` | SMTP server password | No |
+| `EMAIL_FROM` | Email address to send emails from | No |
+
+### Variable Descriptions
+
+- **MONGODB_URI**: The connection string for your MongoDB database. For local MongoDB, use `mongodb://localhost:27017/college-media`. For MongoDB Atlas, use the provided connection string with your credentials.
+
+- **JWT_SECRET**: A secure secret key for signing JWT tokens. This should be a long, random string and kept confidential. Change this in production to prevent token forgery.
+
+- **PORT**: The port number the backend server will run on. Defaults to 5000 if not specified.
+
+- **NODE_ENV**: Set to `development` for development mode or `production` for production. Affects cookie security settings and other behaviors.
+
+- **Email Variables**: Used for sending welcome emails and other notifications. Configure with your SMTP provider details (e.g., Gmail, SendGrid). If not provided, email functionality will be disabled.
+
+### Security Notes
+
+- Never commit the `.env` file to version control.
+- Use strong, unique values for `JWT_SECRET`.
+- For production, use environment-specific values and secure credential management.
+- The `.env.example` file provides template values for all variables.
+
+## Deployment
+
+This guide covers deploying the College Media application to production using popular cloud platforms.
+
+### Recommended Deployment Platforms
+
+- **Frontend**: Vercel (recommended for React apps)
+- **Backend**: Render (free tier available for Node.js apps)
+- **Database**: MongoDB Atlas (cloud MongoDB)
+
+### Production Checklist
+
+Before deploying to production:
+
+- [ ] Set `NODE_ENV=production` in backend environment variables
+- [ ] Use a strong, unique `JWT_SECRET` (at least 32 characters)
+- [ ] Configure MongoDB Atlas with proper security (IP whitelist, authentication)
+- [ ] Set up email configuration if using email features
+- [ ] Test all API endpoints locally
+- [ ] Ensure CORS is properly configured for production domain
+- [ ] Set secure cookie settings (handled automatically when `NODE_ENV=production`)
+
+### Frontend Deployment (Vercel)
+
+1. **Connect Repository**:
+   - Sign up/login to [Vercel](https://vercel.com)
+   - Import your GitHub repository
+   - Vercel will automatically detect it as a Vite React app
+
+2. **Build Configuration**:
+   - Build Command: `npm run build` (automatic)
+   - Output Directory: `dist` (automatic)
+   - Node Version: 18.x or higher
+
+3. **Environment Variables**:
+   - No environment variables needed for frontend (API calls use relative URLs)
+
+4. **Deploy**:
+   - Push to main branch or create a production deployment
+   - Vercel provides a `.vercel.app` domain automatically
+
+### Backend Deployment (Render)
+
+1. **Connect Repository**:
+   - Sign up/login to [Render](https://render.com)
+   - Create a new "Web Service"
+   - Connect your GitHub repository
+
+2. **Service Configuration**:
+   - Runtime: Node.js
+   - Build Command: `npm install` (dependencies only, no build needed)
+   - Start Command: `npm start`
+   - Node Version: 18 or higher
+
+3. **Environment Variables**:
+   Set the following in Render's Environment section:
+   ```
+   MONGODB_URI=your_mongodb_atlas_connection_string
+   JWT_SECRET=your_production_jwt_secret
+   NODE_ENV=production
+   PORT=10000 (or any port, Render assigns dynamically)
+   EMAIL_HOST=your_smtp_host (optional)
+   EMAIL_PORT=587 (optional)
+   EMAIL_USER=your_smtp_user (optional)
+   EMAIL_PASS=your_smtp_password (optional)
+   EMAIL_FROM=your_email@domain.com (optional)
+   ```
+
+4. **Database**:
+   - Ensure MongoDB Atlas allows connections from Render's IP ranges (0.0.0.0/0 for simplicity, or whitelist specific IPs)
+
+5. **Deploy**:
+   - Render deploys automatically on git push
+   - Provides a `.onrender.com` domain
+
+### Database Setup (MongoDB Atlas)
+
+1. **Create Cluster**:
+   - Sign up at [MongoDB Atlas](https://www.mongodb.com/atlas)
+   - Create a free M0 cluster
+
+2. **Database User**:
+   - Create a database user with read/write access
+   - Note the username and password
+
+3. **Network Access**:
+   - Add IP address 0.0.0.0/0 for initial testing (restrict later for security)
+
+4. **Connection String**:
+   - Get connection string from Atlas dashboard
+   - Replace `<username>` and `<password>` with your credentials
+   - Update `MONGODB_URI` in your deployment environment
+
+### Common Deployment Issues
+
+**"Build failed" on Vercel**:
+- Check that all dependencies are listed in `package.json`
+- Ensure Node.js version is compatible (18+)
+- Check build logs for specific errors
+
+**"Application failed to start" on Render**:
+- Verify all environment variables are set correctly
+- Check MongoDB Atlas connection string and network access
+- Ensure `JWT_SECRET` is set and strong
+- Check application logs for specific error messages
+
+**"CORS errors" in production**:
+- Update CORS configuration in `backend/server.js` to allow your frontend domain
+- For Render: Add your Vercel domain to allowed origins
+
+**"Database connection failed"**:
+- Verify MongoDB Atlas IP whitelist includes deployment platform IPs
+- Check connection string format and credentials
+- Ensure database user has correct permissions
+
+**"Email not sending"**:
+- Verify SMTP credentials and host settings
+- Check if email provider requires app passwords (e.g., Gmail)
+- Ensure firewall allows outbound SMTP connections
+
+**"Port binding issues"**:
+- Render assigns ports dynamically - use `process.env.PORT || 5000`
+- Don't hardcode ports in production
+
+### Post-Deployment Steps
+
+1. **Update Frontend API URLs**:
+   - If needed, update API base URLs in frontend to point to production backend
+   - For Vercel + Render, use the provided domains
+
+2. **Test Functionality**:
+   - Register/login users
+   - Create and view posts
+   - Test email features if configured
+
+3. **Monitor and Logs**:
+   - Check Render dashboard for backend logs
+   - Use Vercel analytics for frontend metrics
+   - Monitor MongoDB Atlas for database performance
+
+4. **Security**:
+   - Restrict MongoDB Atlas IP access to only necessary IPs
+   - Use HTTPS (automatic on Vercel/Render)
+   - Regularly rotate JWT secrets and database passwords
+
 ## Project Structure
 
 ```
 college-media/
 ├── backend/
+│   ├── API.md
+│   ├── package.json
+│   ├── server.js
+│   ├── middleware/
+│   │   └── authMiddleware.js
 │   ├── models/
 │   │   ├── User.js
 │   │   └── Post.js
 │   ├── routes/
 │   │   ├── auth.js
 │   │   └── posts.js
-│   ├── package.json
-│   ├── server.js
-│   ├── .env.example
-│   └── .env (create this file)
+│   └── utils/
+│       └── sendEmail.js
 ├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── About.jsx
-│   │   │   ├── CTA.jsx
-│   │   │   ├── Features.jsx
-│   │   │   ├── Footer.jsx
-│   │   │   ├── Hero.jsx
-│   │   │   ├── Navbar.jsx
-│   │   │   └── Team.jsx
-│   │   ├── pages/
-│   │   │   └── Home.jsx
-│   │   ├── styles/
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css
-│   ├── public/
+│   ├── eslint.config.js
+│   ├── index.html
 │   ├── package.json
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
 │   ├── vite.config.js
-│   └── tailwind.config.js
+│   ├── public/
+│   └── src/
+│       ├── App.jsx
+│       ├── index.css
+│       ├── main.jsx
+│       ├── assets/
+│       ├── components/
+│       │   ├── About.jsx
+│       │   ├── CTA.jsx
+│       │   ├── Features.jsx
+│       │   ├── Footer.jsx
+│       │   ├── Hero.jsx
+│       │   ├── Navbar.jsx
+│       │   ├── Team.jsx
+│       │   └── chatbot/
+│       │       ├── chat.service.js
+│       │       ├── ChatBody.jsx
+│       │       ├── ChatbotWidget.jsx
+│       │       ├── ChatHeader.jsx
+│       │       └── ChatInput.jsx
+│       ├── context/
+│       │   ├── AuthContext.jsx
+│       │   ├── ChatContext.jsx
+│       │   └── useChat.js
+│       ├── hooks/
+│       │   └── useChatbot.js
+│       ├── pages/
+│       │   ├── Home.jsx
+│       │   ├── Login.jsx
+│       │   └── Signup.jsx
+│       └── styles/
+│           ├── chatbot.css
+│           └── main.css
+├── .github/
+│   └── ISSUE_TEMPLATE/
+│       └── documentation-improvement.yml
+├── .gitignore
 └── README.md
 ```
 
