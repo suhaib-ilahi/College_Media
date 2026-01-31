@@ -1,17 +1,36 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useContext(AuthContext);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [theme, setTheme] = useState('light');
   const navigate = useNavigate();
+
+  // Initialize theme from localStorage or system preference
+  useEffect(() => {
+    const stored = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initial = stored || (prefersDark ? 'dark' : 'light');
+    setTheme(initial);
+    document.body.classList.remove('light', 'dark');
+    document.body.classList.add(initial);
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    document.body.classList.remove('light', 'dark');
+    document.body.classList.add(next);
+    localStorage.setItem('theme', next);
+  };
 
   const handleLogout = () => {
     logout();
     navigate('/');
     setShowDropdown(false);
-  };
+  }; 
 
   return (
     <nav>
@@ -23,9 +42,20 @@ export default function Navbar() {
 
         <div className="nav-links">
           <ul>
+            <li>
+              <button
+                className="theme-toggle"
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+                title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
+                style={{ cursor: 'pointer', background: 'none', border: 'none', fontSize: '1.1rem' }}
+              >
+                {theme === 'dark' ? '☀️' : '🌙'}
+              </button>
+            </li>
             <li><a href="#features">Features</a></li>
             <li><a href="#about">About</a></li>
-            <li><a href="#team">Team</a></li>
+            <li><a href="#team">Team</a></li> 
             {isAuthenticated ? (
               <li style={{ position: 'relative' }}>
                 <button 
