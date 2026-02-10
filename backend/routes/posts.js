@@ -1,8 +1,23 @@
 const express = require('express');
 const Post = require('../models/Post');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const path = require('path');
 
 const router = express.Router();
+
+// Multer configuration for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
 
 // Middleware to verify token
 const auth = (req, res, next) => {
@@ -26,7 +41,7 @@ router.get('/', auth, async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = parseInt(req.query.offset) || 0;
     const posts = await Post.find()
-      .populate('user', 'name email')
+      .populate('user', 'name email avatar')
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip(offset);
@@ -46,9 +61,10 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Create post
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
-    const { content, image } = req.body;
+    const { content } = req.body;
+    const image = req.file ? `/uploads/${req.file.filename}` : '';
     const post = new Post({
       user: req.userId,
       content,
