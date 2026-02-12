@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { ChatProvider } from "./context/ChatContext";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -11,18 +12,20 @@ import "./styles/main.css";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Router>
-        {/* App Routes */}
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-        </Routes>
+    <ChatProvider>
+      <AuthProvider>
+        <Router>
+          {/* App Routes */}
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+          </Routes>
 
-        {/* Global Floating Chatbot */}
-        <ChatbotWidget />
-      </Router>
-    </AuthProvider>
+          {/* Global Floating Chatbot */}
+          <ChatbotWidget />
+        </Router>
+      </AuthProvider>
+    </ChatProvider>
   );
 }
